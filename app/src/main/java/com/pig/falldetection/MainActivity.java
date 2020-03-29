@@ -37,9 +37,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
         // Log.d(TAG, "onSensorChanged: X: " + event.values[0] + " Y: " + event.values[1] + " Z: " + event.values[2]);
-        double x =  (double) event.values[0];
-        double y =  (double) event.values[1];
-        double z =  (double) event.values[2];
+        double x =  event.values[0];
+        double y =  event.values[1];
+        double z =  event.values[2];
 
         double a = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
         double g = 9.81;
