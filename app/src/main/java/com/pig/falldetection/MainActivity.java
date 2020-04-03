@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,17 +13,45 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final String TAG = "MainActivity";
     private SensorManager sensorManager;
+    private boolean isActive = true;
+    ImageView fallPersonIcon;
+    TextView statusText;
+    Button toggleButton;
     Sensor accelerometer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        fallPersonIcon = findViewById(R.id.fallPersonIcon);
+        statusText = findViewById(R.id.statusText);
+        toggleButton = findViewById(R.id.toggleButton);
+        toggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isActive = !isActive;
+                if (isActive) {
+                    toggleButton.setText("PAUSE FALL DETECTION");
+                    ((Button) v).setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_pause, 0, 0, 0);
+                    fallPersonIcon.setImageResource(R.drawable.fall_person_darkgreen);
+                    statusText.setText("Detection status: ON");
+                } else {
+                    toggleButton.setText("RESUME FALL DETECTION");
+                    ((Button) v).setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_play, 0, 0, 0);
+                    fallPersonIcon.setImageResource(R.drawable.fall_person);
+                    statusText.setText("Detection status: OFF");
+                }
+            }
+        });
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
