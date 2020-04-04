@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -24,7 +25,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="355dp"
         android:layout_marginBottom="16dp"
-        android:tint="@android:color/white" />
+        app:srcCompat="@drawable/ic_person_black_24dp" />
 
     <ImageView
         android:id="@+id/list_icon4"
@@ -61,7 +62,7 @@
             android:paddingRight="16dp"
             android:text="John Gabri"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/primary_text_light" />
 
         <TextView
             android:id="@+id/mtrl_list_item_secondary_text"
@@ -72,7 +73,7 @@
             android:paddingEnd="16dp"
             android:text="0764793163"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            android:textColor="@android:color/secondary_text_dark_nodisable" />
+            android:textColor="@android:color/secondary_text_light" />
 
     </LinearLayout>
 

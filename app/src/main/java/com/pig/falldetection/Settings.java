@@ -1,14 +1,20 @@
 package com.pig.falldetection;
 
 import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -29,18 +35,20 @@ public class Settings extends AppCompatActivity {
 
     private String name = "";
     private String phone = "";
+    String[] COUNTRIES = new String[] {"5 min", "10 min", "15 min", "20 min"};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
-        listItems.add(new ListItem("Johnny Depp", "0253273812"));
-        listItems.add(new ListItem("Johnny Beep", "5656455525"));
+        setActionBarColor();
+        setDropdownTypeNull();
         fab = findViewById(R.id.fab);
 
-        MyListAdapter adapter = new MyListAdapter(this, listItems);
-        list = (ListView) findViewById(R.id.list);
-        list.setAdapter(adapter);
+        MyListAdapter adapter = getMyListAdapter();
+
+        setDropdownAdapter();
 
         fab.setOnClickListener((View v) -> {
             LinearLayout phoneInputLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.phone_input,  null);
@@ -70,6 +78,43 @@ public class Settings extends AppCompatActivity {
 
             builder.show();
         });
+    }
+
+    private MyListAdapter getMyListAdapter() {
+        listItems.add(new ListItem("Johnny Depp", "0253273812"));
+        listItems.add(new ListItem("Johnny Beep", "5656455525"));
+        MyListAdapter adapter = new MyListAdapter(this, listItems);
+        list = (ListView) findViewById(R.id.list);
+        list.setAdapter(adapter);
+        return adapter;
+    }
+
+    private void setDropdownAdapter() {
+        ArrayAdapter<String> dropdownAdapter =
+                new ArrayAdapter<>(
+                        getApplicationContext(),
+                        R.layout.dropdown_menu_popup_item,
+                        COUNTRIES);
+
+        AutoCompleteTextView editTextFilledExposedDropdown =
+                findViewById(R.id.filled_exposed_dropdown);
+        editTextFilledExposedDropdown.setAdapter(dropdownAdapter);
+    }
+
+    private void setActionBarColor() {
+        ActionBar actionBar;
+        actionBar = getSupportActionBar();
+
+        ColorDrawable colorDrawable
+                = new ColorDrawable(Color.parseColor("#004ba0"));
+
+        actionBar.setBackgroundDrawable(colorDrawable);
+    }
+
+    public void setDropdownTypeNull()
+    {
+        AutoCompleteTextView dropdown = findViewById(R.id.filled_exposed_dropdown);
+        dropdown.setInputType(InputType.TYPE_NULL);
     }
 
 }

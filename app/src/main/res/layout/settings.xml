@@ -7,24 +7,18 @@
     android:layout_height="match_parent">
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/name_text_input"
-        style="@style/TextFieldStyles"
+        android:id="@+id/dropdown_menu"
+        style="@style/DropdownStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.01999998">
+        android:hint="Minutes"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/phoneInput"
+        <AutoCompleteTextView
+            android:id="@+id/filled_exposed_dropdown"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Phone number"
-            android:inputType="phone" />
+            android:layout_height="wrap_content" />
+
     </com.google.android.material.textfield.TextInputLayout>
 
     <ListView
@@ -32,8 +26,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_text_input"
-        app:layout_constraintVertical_bias="0.050000012"></ListView>
+        app:layout_constraintTop_toBottomOf="@+id/dropdown_menu"
+        app:layout_constraintVertical_bias="0.050000012" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -42,6 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
         android:layout_margin="16dp"
+        app:backgroundTint="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_add_black_24dp" />
