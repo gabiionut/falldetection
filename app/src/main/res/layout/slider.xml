@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:value="5"
-        android:valueFrom="1"
+        android:valueFrom="0"
         android:stepSize="5"
-        android:valueTo="21" />
+        android:valueTo="60" />
 </LinearLayout>
