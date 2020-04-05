@@ -16,4 +16,7 @@ public class State{
     public ArrayList<ListItem>  getState() {
         return listItems;
     }
+    public void removeItem(int index) {
+        this.listItems.remove(index);
+    }
 }
