@@ -5,10 +5,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -70,7 +72,7 @@ public class Settings extends AppCompatActivity {
 
     private MyListAdapter getMyListAdapter() {
         MyListAdapter adapter = new MyListAdapter(this, listItems);
-        list = (ListView) findViewById(R.id.list);
+        list = findViewById(R.id.list);
         list.setAdapter(adapter);
         return adapter;
     }
@@ -103,4 +105,30 @@ public class Settings extends AppCompatActivity {
         dropdown.setInputType(InputType.TYPE_NULL);
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.time_menu, menu);
+        return true;
+    }
+
+    public void onTimeIconClick(MenuItem mi) {
+        LinearLayout phoneInputLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.slider,  null);
+        Slider slider = phoneInputLayout.findViewById(R.id.slider);
+
+        slider.addOnChangeListener((slider1, value, fromUser) -> {
+            Log.d("Slider", "value");
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose duration until the message is sent");
+
+        builder.setView(phoneInputLayout);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.show();
+    }
 }
