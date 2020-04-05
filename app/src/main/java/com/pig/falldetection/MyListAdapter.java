@@ -35,7 +35,6 @@ public class MyListAdapter extends ArrayAdapter<ListItem> {
         View rowView=inflater.inflate(R.layout.phone_list, null,true);
 
         TextView titleText = rowView.findViewById(R.id.label);
-        ImageView imageView = rowView.findViewById(R.id.list_icon3);
         TextView subtitleText =  rowView.findViewById(R.id.mtrl_list_item_secondary_text);
         ImageButton deleteButton = rowView.findViewById(R.id.delete_btn);
 
@@ -52,7 +51,6 @@ public class MyListAdapter extends ArrayAdapter<ListItem> {
         });
 
         titleText.setText(listItems.get(position).name);
-        imageView.setImageResource(R.drawable.ic_person_black_24dp);
         subtitleText.setText(listItems.get(position).phone);
 
         return rowView;

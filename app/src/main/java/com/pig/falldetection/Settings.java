@@ -3,13 +3,10 @@ package com.pig.falldetection;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
@@ -32,20 +29,16 @@ public class Settings extends AppCompatActivity {
 
     private String name = "";
     private String phone = "";
-    String[] COUNTRIES = new String[] {"5 min", "10 min", "15 min", "20 min"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
         setActionBarColor();
-        setDropdownTypeNull();
         listItems = State.instance.getState();
         fab = findViewById(R.id.fab);
 
         MyListAdapter adapter = getMyListAdapter();
-
-        setDropdownAdapter();
 
         fab.setOnClickListener((View v) -> {
             LinearLayout phoneInputLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.phone_input,  null);
@@ -77,18 +70,6 @@ public class Settings extends AppCompatActivity {
         return adapter;
     }
 
-    private void setDropdownAdapter() {
-        ArrayAdapter<String> dropdownAdapter =
-                new ArrayAdapter<>(
-                        getApplicationContext(),
-                        R.layout.dropdown_menu_popup_item,
-                        COUNTRIES);
-
-        AutoCompleteTextView editTextFilledExposedDropdown =
-                findViewById(R.id.filled_exposed_dropdown);
-        editTextFilledExposedDropdown.setAdapter(dropdownAdapter);
-    }
-
     private void setActionBarColor() {
         ActionBar actionBar;
         actionBar = getSupportActionBar();
@@ -98,13 +79,6 @@ public class Settings extends AppCompatActivity {
 
         actionBar.setBackgroundDrawable(colorDrawable);
     }
-
-    public void setDropdownTypeNull()
-    {
-        AutoCompleteTextView dropdown = findViewById(R.id.filled_exposed_dropdown);
-        dropdown.setInputType(InputType.TYPE_NULL);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
