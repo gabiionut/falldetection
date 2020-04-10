@@ -1,7 +1,9 @@
 package com.pig.falldetection;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
@@ -20,11 +22,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -37,10 +39,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final String TAG = "MainActivity";
     private SensorManager sensorManager;
     private boolean isActive = true;
+    private boolean fallDetected = false;
     ImageView fallPersonIcon;
     TextView statusText;
     Button toggleButton;
     Sensor accelerometer;
+    int time;
+    AlertDialog alertDialog;
+    CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +56,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         fallPersonIcon = findViewById(R.id.fallPersonIcon);
         statusText = findViewById(R.id.statusText);
         toggleButton = findViewById(R.id.toggleButton);
+        isActive = State.instance.getDetectionStatus();
         setFallIcon();
 
-
-        toggleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                isActive = !isActive;
-                setFallIcon();
-            }
+        toggleButton.setOnClickListener(v -> {
+            isActive = !isActive;
+            State.instance.toggleDetectionStatus();
+            setFallIcon();
         });
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -107,12 +111,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double maxThreshold = 3.19;
         double minThreshold = 1.02;
 
-        if (a < maxThreshold && a > minThreshold && isActive) {
-            Log.d(TAG, "Fall detected!!");
-            Toast.makeText(this, "Fall detected!!", Toast.LENGTH_SHORT).show();
-            if (isSMSPermissionGranted()) {
-                sendSms();
-            }
+        if (a < maxThreshold && a > minThreshold && isActive && !fallDetected) {
+            fallDetected = true;
+            fallDetected();
         }
     }
 
@@ -134,8 +135,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             try {
                 SmsManager smsManager = SmsManager.getDefault();
                 smsManager.sendTextMessage(listItem.phone, null, getLocation(), null, null);
-                Toast.makeText(getApplicationContext(), "Message Sent",
-                        Toast.LENGTH_LONG).show();
             } catch (Exception ex) {
                 Toast.makeText(getApplicationContext(), ex.getMessage(),
                         Toast.LENGTH_LONG).show();
@@ -222,5 +221,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double longitude = myLocation.getLongitude();
             double latitude = myLocation.getLatitude();
             return "https://www.google.com/maps/search/?api=1&query=" + latitude + ","+longitude;
+    }
+
+    private void fallDetected() {
+        ConstraintLayout fallAlertLayout= (ConstraintLayout) getLayoutInflater().inflate(R.layout.fall_alert,  null);
+        TextView timerTextView = fallAlertLayout.findViewById(R.id.timer);
+        Button cancelBtn = fallAlertLayout.findViewById(R.id.im_ok_button);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        alertDialog = builder.create();
+        alertDialog.setView(fallAlertLayout);
+        alertDialog.show();
+        time = (int) State.instance.getDuration() * 1000;
+
+        timer = new CountDownTimer(time, 1000) {
+            public void onTick(long millisUntilFinished) {
+                time = time - 1000;
+                timerTextView.setText(String.valueOf(time/1000+1));
+            }
+
+            public void onFinish() {
+                alertDialog.cancel();
+                fallDetected = false;
+                startSms();
+            }
+        }.start();
+
+        cancelBtn.setOnClickListener(v -> {
+            alertDialog.cancel();
+            timer.cancel();
+        });
+    }
+
+    private void startSms() {
+        if (isSMSPermissionGranted()) {
+            sendSms();
+        }
+        Toast.makeText(getApplicationContext(), "Message Sent", Toast.LENGTH_SHORT).show();
     }
 }

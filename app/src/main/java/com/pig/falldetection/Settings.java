@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -67,6 +68,7 @@ public class Settings extends AppCompatActivity {
         MyListAdapter adapter = new MyListAdapter(this, listItems);
         list = findViewById(R.id.list);
         list.setAdapter(adapter);
+
         return adapter;
     }
 
@@ -89,10 +91,8 @@ public class Settings extends AppCompatActivity {
     public void onTimeIconClick(MenuItem mi) {
         LinearLayout phoneInputLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.slider,  null);
         Slider slider = phoneInputLayout.findViewById(R.id.slider);
-
-        slider.addOnChangeListener((slider1, value, fromUser) -> {
-            Log.d("Slider", "value");
-        });
+        float sliderValue = State.instance.getDuration();
+        slider.setValue(sliderValue);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose duration until the message is sent");
@@ -100,7 +100,7 @@ public class Settings extends AppCompatActivity {
         builder.setView(phoneInputLayout);
 
         builder.setPositiveButton("OK", (dialog, which) -> {
-
+            State.instance.setDuration(slider.getValue());
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
