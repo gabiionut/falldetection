@@ -40,13 +40,13 @@ public class MyListAdapter extends ArrayAdapter<ListItem> {
 
         deleteButton.setOnClickListener(v -> {
             new MaterialAlertDialogBuilder(context)
-                    .setTitle("Delete contact")
-                    .setMessage("Are you sure you want to delete this contact?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
+                    .setTitle("Sterge contactul")
+                    .setMessage("Sunteti sigur ca doriti sa stergeti acest contact?")
+                    .setPositiveButton("Da", (dialog, which) -> {
                         State.instance.removeItem(position);
                         notifyDataSetChanged();
                     })
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton("Anuleaza", null)
                     .show();
         });
 

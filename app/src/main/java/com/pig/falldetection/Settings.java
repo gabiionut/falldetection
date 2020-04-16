@@ -46,7 +46,7 @@ public class Settings extends AppCompatActivity {
             TextInputEditText phoneInput = phoneInputLayout.findViewById(R.id.phone_input_field);
             TextInputEditText nameInput = phoneInputLayout.findViewById(R.id.name_input_field);
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Add a new contact person");
+            builder.setTitle("Adauga un nou contact de urgenta");
 
             builder.setView(phoneInputLayout);
 
@@ -58,7 +58,7 @@ public class Settings extends AppCompatActivity {
                 Log.d(phone, name);
                 adapter.notifyDataSetChanged();
             });
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+            builder.setNegativeButton("Anuleaza", (dialog, which) -> dialog.cancel());
 
             builder.show();
         });
@@ -95,14 +95,14 @@ public class Settings extends AppCompatActivity {
         slider.setValue(sliderValue);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose duration until the message is sent");
+        builder.setTitle("Alege timpul in care trimiterea mesajului poate fi anulata");
 
         builder.setView(phoneInputLayout);
 
         builder.setPositiveButton("OK", (dialog, which) -> {
             State.instance.setDuration(slider.getValue());
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.setNegativeButton("Anuleaza", (dialog, which) -> dialog.cancel());
         builder.show();
     }
 }

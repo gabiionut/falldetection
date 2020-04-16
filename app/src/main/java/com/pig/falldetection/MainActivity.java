@@ -73,15 +73,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void setFallIcon() {
         if (isActive) {
-            toggleButton.setText("PAUSE FALL DETECTION");
+            toggleButton.setText("OPRESTE DETECTIA");
             toggleButton.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_pause, 0, 0, 0);
             fallPersonIcon.setImageResource(R.drawable.fall_person_darkgreen);
-            statusText.setText("Detection status: ON");
+            statusText.setText("DETECTIA ESTE PORNITA");
         } else {
-            toggleButton.setText("RESUME FALL DETECTION");
+            toggleButton.setText("PORNESTE DETECTIA");
             toggleButton.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_play, 0, 0, 0);
             fallPersonIcon.setImageResource(R.drawable.fall_person);
-            statusText.setText("Detection status: OFF");
+            statusText.setText("DETECTIA ESTE OPRITA");
         }
     }
 
@@ -183,11 +183,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case 0: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Permisiune acceptata", Toast.LENGTH_SHORT).show();
                     //send sms here call your method
                     sendSms();
                 } else {
-                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Permisiune refuzata", Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
@@ -197,30 +197,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @SuppressLint("MissingPermission")
     private String getLocation() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            if (!isLocationPermissionGranted()) {
-                return null;
+        if (!isLocationPermissionGranted()) {
+            return null;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, new LocationListener() {
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
             }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, new LocationListener() {
-                @Override
-                public void onStatusChanged(String s, int i, Bundle bundle) {
-                }
 
-                @Override
-                public void onProviderEnabled(String s) {
-                }
+            @Override
+            public void onProviderEnabled(String s) {
+            }
 
-                @Override
-                public void onProviderDisabled(String s) {
-                }
+            @Override
+            public void onProviderDisabled(String s) {
+            }
 
-                @Override
-                public void onLocationChanged(final Location location) {
-                }
-            });
-            Location myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-            double longitude = myLocation.getLongitude();
-            double latitude = myLocation.getLatitude();
-            return "https://www.google.com/maps/search/?api=1&query=" + latitude + ","+longitude;
+            @Override
+            public void onLocationChanged(final Location location) {
+            }
+        });
+        Location myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+        double longitude = myLocation.getLongitude();
+        double latitude = myLocation.getLatitude();
+        return "https://www.google.com/maps/search/?api=1&query=" + latitude + ","+longitude;
     }
 
     private void fallDetected() {
@@ -256,6 +256,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (isSMSPermissionGranted()) {
             sendSms();
         }
-        Toast.makeText(getApplicationContext(), "Message Sent", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Mesajul a fost trimis", Toast.LENGTH_SHORT).show();
     }
 }
