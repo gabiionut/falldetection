@@ -32,6 +32,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -47,6 +55,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     int time;
     AlertDialog alertDialog;
     CountDownTimer timer;
+    String location;
+
+    String urlString = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
+
+    String apiToken = "1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q";
+    String chatId = "@-1001252607178";
+    String text = "Afostdetectataocadere!";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,8 +121,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double z = event.values[2];
 
         double a = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
-        double g = 9.81;
-        double G = a / g;
         double maxThreshold = 3.19;
         double minThreshold = 1.02;
 
@@ -134,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         listItems.forEach(listItem -> {
             try {
                 SmsManager smsManager = SmsManager.getDefault();
+                location = getLocation();
                 smsManager.sendTextMessage(listItem.phone, null, getLocation(), null, null);
             } catch (Exception ex) {
                 Toast.makeText(getApplicationContext(), ex.getMessage(),
@@ -152,6 +166,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             } else {
                 Log.v(TAG, "Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 0);
+                return false;
+            }
+        } else {
+            Log.v(TAG, "Permission is granted");
+            return true;
+        }
+    }
+
+    public boolean isNetworkPermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.INTERNET)
+                    == PackageManager.PERMISSION_GRANTED && checkSelfPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG, "Permission is granted");
+                return true;
+            } else {
+                Log.v(TAG, "Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 0);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 0);
                 return false;
             }
         } else {
@@ -243,6 +276,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 alertDialog.cancel();
                 fallDetected = false;
                 startSms();
+                Thread thread = new Thread(() -> {
+                    try  {
+                        if (isNetworkPermissionGranted()) {
+                            sendMessageToTelegram();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                thread.start();
             }
         }.start();
 
@@ -257,5 +300,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sendSms();
         }
         Toast.makeText(getApplicationContext(), "Mesajul a fost trimis", Toast.LENGTH_SHORT).show();
+    }
+
+    private void sendMessageToTelegram() throws IOException {
+        String loc = location;
+        urlString = "https://api.telegram.org/bot1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q/sendMessage?chat_id=-1001252607178&text=" + location;
+
+        URL url = new URL(urlString);
+        URLConnection conn = url.openConnection();
+
+        StringBuilder sb = new StringBuilder();
+        InputStream is = new BufferedInputStream(conn.getInputStream());
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        String inputLine = "";
+        while ((inputLine = br.readLine()) != null) {
+            sb.append(inputLine);
+        }
     }
 }
