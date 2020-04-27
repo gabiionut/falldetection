@@ -1,11 +1,5 @@
 package com.pig.falldetection;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -20,9 +14,13 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.Menu;
@@ -32,14 +30,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+
+import com.ajts.androidmads.telegrambotlibrary.Telegram;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -48,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private boolean isActive = true;
     private boolean fallDetected = false;
+    private boolean timerStarted = false;
+    private boolean movementDetected = false;
     ImageView fallPersonIcon;
     TextView statusText;
     Button toggleButton;
@@ -57,11 +65,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     CountDownTimer timer;
     String location;
 
-    String urlString = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
+    double previousX;
+    double previousY;
+    double previousZ;
 
-    String apiToken = "1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q";
-    String chatId = "@-1001252607178";
-    String text = "Afostdetectataocadere!";
+    double a;
+    double g = 9.834;
+    double gThreshold = 3.5;
+
+    Uri ringtoneUri;
+    Ringtone ringtoneSound;
+
+    String urlString = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
+    Telegram telegram = new Telegram("1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         toggleButton = findViewById(R.id.toggleButton);
         isActive = State.instance.getDetectionStatus();
         setFallIcon();
+        ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        ringtoneSound = RingtoneManager.getRingtone(getApplicationContext(), ringtoneUri);
 
         toggleButton.setOnClickListener(v -> {
             isActive = !isActive;
@@ -119,14 +137,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double x = event.values[0];
         double y = event.values[1];
         double z = event.values[2];
+        fallDetected = false;
 
-        double a = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+        a = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
         double maxThreshold = 3.19;
         double minThreshold = 1.02;
 
         if (a < maxThreshold && a > minThreshold && isActive && !fallDetected) {
             fallDetected = true;
-            fallDetected();
+            previousX = event.values[0];
+            previousY = event.values[1];
+            previousZ = event.values[2];
+        }
+
+        if (fallDetected && !timerStarted) {
+            timerStarted = true;
+            movementDetected = false;
+            Toast.makeText(getApplicationContext(), "FALL", Toast.LENGTH_SHORT).show();
+            final Handler handler = new Handler();
+            handler.postDelayed(() -> {
+                timer = new CountDownTimer(5000, 1000) {
+                    public void onTick(long millisUntilFinished) {
+                        Log.i("A-VALUE", String.valueOf(a));
+                        if (a < g - gThreshold || a > g + gThreshold) {
+                            movementDetected = true;
+                        }
+                    }
+
+                    public void onFinish() {
+                        if (!movementDetected) {
+                            fallDetected();
+                        }
+                        timerStarted = false;
+                    }
+                }.start();
+            }, 2000);
         }
     }
 
@@ -217,7 +262,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "Permisiune acceptata", Toast.LENGTH_SHORT).show();
-                    //send sms here call your method
                     sendSms();
                 } else {
                     Toast.makeText(this, "Permisiune refuzata", Toast.LENGTH_SHORT).show();
@@ -253,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Location myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         double longitude = myLocation.getLongitude();
         double latitude = myLocation.getLatitude();
-        return "https://www.google.com/maps/search/?api=1&query=" + latitude + ","+longitude;
+        return "https://www.google.com/maps/search/?api=1&query=" + latitude + "," + longitude;
     }
 
     private void fallDetected() {
@@ -264,6 +308,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         alertDialog = builder.create();
         alertDialog.setView(fallAlertLayout);
         alertDialog.show();
+
+
+        if (ringtoneSound != null) {
+            ringtoneSound.play();
+        }
         time = (int) State.instance.getDuration() * 1000;
 
         timer = new CountDownTimer(time, 1000) {
@@ -275,7 +324,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onFinish() {
                 alertDialog.cancel();
                 fallDetected = false;
+                if (ringtoneSound != null) {
+                    ringtoneSound.stop();
+                }
                 startSms();
+
+                // Telegram
                 Thread thread = new Thread(() -> {
                     try  {
                         if (isNetworkPermissionGranted()) {
@@ -292,6 +346,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         cancelBtn.setOnClickListener(v -> {
             alertDialog.cancel();
             timer.cancel();
+            if (ringtoneSound != null) {
+                ringtoneSound.stop();
+            }
         });
     }
 
@@ -303,9 +360,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void sendMessageToTelegram() throws IOException {
-        String loc = location;
-        urlString = "https://api.telegram.org/bot1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q/sendMessage?chat_id=-1001252607178&text=" + location;
+        String locationFormatted = String.format("<a href=\"%s\">Location</a>", location);
+        String locEncoded = URLEncoder.encode(locationFormatted, "UTF-8");
 
+        urlString = "https://api.telegram.org/bot1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q/sendMessage?chat_id=-1001252607178&parse_mode=html&text=" + locEncoded;
         URL url = new URL(urlString);
         URLConnection conn = url.openConnection();
 
