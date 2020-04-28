@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean movementDetected = false;
     ImageView fallPersonIcon;
     TextView statusText;
+    TextView helpText;
     Button toggleButton;
     Sensor accelerometer;
     int time;
@@ -76,9 +77,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Uri ringtoneUri;
     Ringtone ringtoneSound;
 
-    String urlString = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
-    Telegram telegram = new Telegram("1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q");
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,10 +84,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         fallPersonIcon = findViewById(R.id.fallPersonIcon);
         statusText = findViewById(R.id.statusText);
+        helpText = findViewById(R.id.helpText);
         toggleButton = findViewById(R.id.toggleButton);
         isActive = State.instance.getDetectionStatus();
         setFallIcon();
-        ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
         ringtoneSound = RingtoneManager.getRingtone(getApplicationContext(), ringtoneUri);
 
         toggleButton.setOnClickListener(v -> {
@@ -110,11 +109,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             toggleButton.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_pause, 0, 0, 0);
             fallPersonIcon.setImageResource(R.drawable.fall_person_darkgreen);
             statusText.setText("DETECTIA ESTE PORNITA");
+            helpText.setText("\"OPRESTE DETECTIA\" va dezactiva protectia");
         } else {
             toggleButton.setText("PORNESTE DETECTIA");
             toggleButton.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_play, 0, 0, 0);
             fallPersonIcon.setImageResource(R.drawable.fall_person);
             statusText.setText("DETECTIA ESTE OPRITA");
+            helpText.setText("\"PORNESTE DETECTIA\" va activa protectia");
         }
     }
 
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (fallDetected && !timerStarted) {
             timerStarted = true;
             movementDetected = false;
-            Toast.makeText(getApplicationContext(), "FALL", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Cadere", Toast.LENGTH_SHORT).show();
             final Handler handler = new Handler();
             handler.postDelayed(() -> {
                 timer = new CountDownTimer(5000, 1000) {
@@ -161,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         Log.i("A-VALUE", String.valueOf(a));
                         if (a < g - gThreshold || a > g + gThreshold) {
                             movementDetected = true;
+                            Toast.makeText(getApplicationContext(), "Miscare detectata", Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -193,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             try {
                 SmsManager smsManager = SmsManager.getDefault();
                 location = getLocation();
-                smsManager.sendTextMessage(listItem.phone, null, getLocation(), null, null);
+                smsManager.sendTextMessage(listItem.phone, null, location, null, null);
             } catch (Exception ex) {
                 Toast.makeText(getApplicationContext(), ex.getMessage(),
                         Toast.LENGTH_LONG).show();
@@ -307,7 +309,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         alertDialog = builder.create();
         alertDialog.setView(fallAlertLayout);
-        alertDialog.show();
+        if (!isFinishing()) {
+            alertDialog.show();
+        }
 
 
         if (ringtoneSound != null) {
@@ -360,10 +364,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void sendMessageToTelegram() throws IOException {
-        String locationFormatted = String.format("<a href=\"%s\">Location</a>", location);
-        String locEncoded = URLEncoder.encode(locationFormatted, "UTF-8");
-
-        urlString = "https://api.telegram.org/bot1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q/sendMessage?chat_id=-1001252607178&parse_mode=html&text=" + locEncoded;
+        String locEncoded = URLEncoder.encode(location, "UTF-8");
+        String message = "S-a detectat o cadere! Locatia utilizatorului este urmatoarea: " + locEncoded;
+        String urlString = "https://api.telegram.org/bot1164943207:AAEkxLuUVIFS-PvO_1z2C1Y6u1POYWFn51Q/sendMessage?chat_id=-1001252607178&parse_mode=html&text=" + message;
         URL url = new URL(urlString);
         URLConnection conn = url.openConnection();
 
